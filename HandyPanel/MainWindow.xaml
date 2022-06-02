@@ -1,0 +1,271 @@
+﻿<hc:GlowWindow x:Class="HandyPanel.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
+        xmlns:local="clr-namespace:HandyPanel"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        mc:Ignorable="d"
+        DataContext="{Binding Source={StaticResource Locator}, Path=Main}"
+        Title="HandyPanel"
+        ShowTitle="False"
+        Style="{StaticResource WindowGlow}"
+        Background="{DynamicResource SecondaryRegionBrush}"
+        ActiveGlowColor="{DynamicResource PrimaryColor}"
+        ResizeMode="CanResizeWithGrip"
+        WindowStartupLocation="CenterScreen"
+        Icon="app.ico">
+    <hc:SimplePanel>
+        <Grid>
+            <Grid.Resources>
+                <DataTemplate x:Key="DT_QiuckItem">
+                    <StackPanel Background="Transparent" Width="80" Height="80" Margin="0,6,0,0">
+                        <StackPanel.ToolTip>
+                            <StackPanel>
+                                <TextBlock>
+                                    <Run Text="执行目标："/><Run Text="{Binding Target, Mode=OneWay}"/>
+                                </TextBlock>
+                                <TextBlock>
+                                    <Run Text="执行参数："/><Run Text="{Binding Arguments, Mode=OneWay}"/>
+                                </TextBlock>
+                                <TextBlock>
+                                    <Run Text="工作目录："/><Run Text="{Binding WorkingDir, Mode=OneWay}"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </StackPanel.ToolTip>
+                        <Image Source="{Binding Icon}" Stretch="Uniform" Width="48" Height="48"/>
+                        <TextBlock Text="{Binding Name}" DockPanel.Dock="Bottom" Padding="0" Margin="0,5,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </DataTemplate>
+            </Grid.Resources>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="1*" MinWidth="370"/>
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0">
+                <DockPanel LastChildFill="True">
+                    <ListBox x:Name="x_TabItems" DockPanel.Dock="Left"
+                         ItemsSource="{Binding TabList}"
+                         DisplayMemberPath="Name"
+                         SelectedValuePath="Items"
+                         SelectedIndex="{Binding TabListSelectIndex}" MinWidth="80" HorizontalContentAlignment="Center">
+                        <ListBox.ItemContainerStyle>
+                            <Style BasedOn="{StaticResource ListBoxItemBaseStyle}" TargetType="ListBoxItem">
+                                <Setter Property="Padding" Value="5,0"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBorderBrush}" />
+                                <Setter Property="BorderThickness" Value="0,0,0,1" />
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+                    <ListBox DockPanel.Dock="Right" ItemsSource="{Binding ElementName=x_TabItems, Path=SelectedValue}"
+                         ItemTemplate="{StaticResource DT_QiuckItem}" AllowDrop="True"
+                         DragEnter="HandleTabItemListDragEnter" Drop="HandleTabItemListDrop">
+                        <ListBox.ItemContainerStyle>
+                            <Style BasedOn="{StaticResource ListBoxItemBaseStyle}" TargetType="ListBoxItem">
+                                <Setter Property="Padding" Value="5,0"/>
+                                <EventSetter Event="MouseDoubleClick" Handler="HandleTabHandyItemDoubleClicked"/>
+                                <EventSetter Event="PreviewMouseLeftButtonDown" Handler="HandleTabHandyItemSingleClicked"/>
+                                <EventSetter Event="PreviewMouseRightButtonDown" Handler="HandleTabHandyItemRightPushed"/>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                    </ListBox>
+                </DockPanel>
+            </Grid>
+            <GridSplitter Grid.Column="1" Width="2" VerticalAlignment="Stretch" HorizontalAlignment="Center" Background="Transparent"/>
+            <Grid Grid.Column="2">
+                <ListBox ItemsSource="{Binding BoxList}" HorizontalContentAlignment="Stretch" ScrollViewer.CanContentScroll="False">
+                    <ListBox.ItemContainerStyle>
+                        <Style BasedOn="{StaticResource ListBoxItemBaseStyle}" TargetType="ListBoxItem">
+                            <Setter Property="Padding" Value="0"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Expander Header="{Binding Name}" IsExpanded="{Binding Selected}" hc:BorderElement.CornerRadius="0">
+                                <ListBox ItemsSource="{Binding Items}" ScrollViewer.CanContentScroll="False" ScrollViewer.VerticalScrollBarVisibility="Disabled" PreviewMouseWheel="HandleBoxItemListPreviewMouseWheel"
+                                     ItemTemplate="{StaticResource DT_QiuckItem}"
+                                     AllowDrop="True" DragEnter="HandleBoxItemListDragEnter" Drop="HandleBoxItemListDrop">
+                                    <ListBox.ItemContainerStyle>
+                                        <Style BasedOn="{StaticResource ListBoxItemBaseStyle}" TargetType="ListBoxItem">
+                                            <Setter Property="Padding" Value="5,0"/>
+                                            <EventSetter Event="MouseDoubleClick" Handler="HandleBoxHandyItemDoubleClicked"/>
+                                            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="HandleBoxHandyItemSingleClicked"/>
+                                            <EventSetter Event="PreviewMouseRightButtonDown" Handler="HandleBoxHandyItemRightPushed"/>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
+                                </ListBox>
+                            </Expander>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Grid>
+        <hc:Drawer x:Name="x_ItemDetailPanel" IsOpen="{Binding ItemDetailOpened}" Dock="Left" ShowMode="Cover" MaskCanClose="True" Closed="HandleItemDetailPanelClosed">
+            <Border Width="600" BorderThickness="0,1,1,0" BorderBrush="{DynamicResource BorderBrush}">
+                <Border.Background>
+                    <SolidColorBrush Opacity="0.7" Color="{DynamicResource RegionColor}" />
+                </Border.Background>
+                <StackPanel>
+                    <StackPanel.Resources>
+                        <Style TargetType="hc:Divider" BasedOn="{StaticResource DividerBaseStyle}">
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Margin" Value="0" />
+                        </Style>
+                        <Style TargetType="Label" BasedOn="{StaticResource LabelBaseStyle}">
+                            <Setter Property="hc:BorderElement.CornerRadius" Value="0" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                            <Setter Property="HorizontalContentAlignment" Value="Left" />
+                        </Style>
+                    </StackPanel.Resources>
+                    <hc:ButtonGroup Margin="8">
+                        <Button Content="删除项目" Click="HandleDeleteItemClicked" hc:IconElement.Width="16" hc:IconElement.Height="16" hc:IconElement.Geometry="M432 32H312l-9.4-18.7A24 24 0 0 0 281.1 0H166.8a23.72 23.72 0 0 0-21.4 13.3L136 32H16A16 16 0 0 0 0 48v32a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16zM53.2 467a48 48 0 0 0 47.9 45h245.8a48 48 0 0 0 47.9-45L416 128H32z"/>
+                        <Button Content="管理员运行" IsEnabled="{Binding CurDetailItem.IsExecutable}" Click="HandleRunItemAsAdminClicked" hc:IconElement.Width="16" hc:IconElement.Height="16" hc:IconElement.Geometry="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M17.13,17C15.92,18.85 14.11,20.24 12,20.92C9.89,20.24 8.08,18.85 6.87,17C6.53,16.5 6.24,16 6,15.47C6,13.82 8.71,12.47 12,12.47C15.29,12.47 18,13.79 18,15.47C17.76,16 17.47,16.5 17.13,17Z"/>
+                        <Button Content="复制路径" Click="HandleCopyItemTargetPathClicked" hc:IconElement.Width="16" hc:IconElement.Height="16" hc:IconElement.Geometry="M 116,412 V 80 H 96 C 78.4,80 64,94.4 64,112 v 352 c 0,17.6 14.4,32 32,32 h 256 c 17.6,0 32,-14.4 32,-32 V 444 H 148 c -17.6,0 -32,-14.4 -32,-32 z M 307,96 V 16 H 176 c -17.6,0 -32,14.4 -32,32 v 336 c 0,17.6 14.4,32 32,32 h 240 c 17.6,0 32,-14.4 32,-32 V 141 h -96 c -24.8,0 -45,-20.2 -45,-45 z m 45,19 h 90 c 3.3,0 6,-2.7 6,-6 0,-8.2 -3.7,-16 -10,-21.3 L 360.9,23.5 c -4.9,-4.1 -14.2,-7.4 -20.6,-7.4 -4.1,0 -7.4,3.3 -7.4,7.4 V 96 c 0.1,10.5 8.6,19 19.1,19 z"/>
+                        <Button Content="定位目标" Click="HandleLocateItemClicked" hc:IconElement.Width="16" hc:IconElement.Height="16" hc:IconElement.Geometry="M10 20S3 10.87 3 7a7 7 0 1 1 14 0c0 3.87-7 13-7 13zm0-11a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
+                    </hc:ButtonGroup>
+                    <hc:Divider LineStrokeThickness="2" LineStroke="{DynamicResource DarkPrimaryBrush}" Margin="8,0"/>
+                    <Grid Margin="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Label Content="名称" Grid.Column="0" Grid.Row="0"/>
+                        <hc:TextBox Grid.Column="1" Grid.Row="0" ShowClearButton="True" Background="Transparent" Text="{Binding CurDetailItem.NameValue, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0"
+                                    ToolTip="默认为目标名称"/>
+
+                        <Label Content="图标" Grid.Column="0" Grid.Row="1"/>
+                        <Border Grid.Column="1" Grid.Row="1" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Margin="0,4,0,0" HorizontalAlignment="Left">
+                            <Image ToolTip="左击更换，右击重置" Source="{Binding CurDetailItem.Icon}" Stretch="Uniform" Width="48" Height="48" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   MouseLeftButtonDown="HandleItemDetailSelectImage" MouseRightButtonDown="HandleItemDetailResetImage"/>
+                        </Border>
+
+                        <Label Content="目标" Grid.Column="0" Grid.Row="2"/>
+                        <DockPanel Grid.Column="1" Grid.Row="2" Margin="0,4,0,0" LastChildFill="True">
+                            <Button DockPanel.Dock="Right" Foreground="{DynamicResource PrimaryBrush}" Style="{StaticResource ButtonIcon}" hc:IconElement.Geometry="M572.694 292.093L500.27 416.248A63.997 63.997 0 0 1 444.989 448H45.025c-18.523 0-30.064-20.093-20.731-36.093l72.424-124.155A64 64 0 0 1 152 256h399.964c18.523 0 30.064 20.093 20.73 36.093zM152 224h328v-48c0-26.51-21.49-48-48-48H272l-64-64H48C21.49 64 0 85.49 0 112v278.046l69.077-118.418C86.214 242.25 117.989 224 152 224z"
+                             Click="HandleItemDetailSelectTarget"/>
+                            <hc:TextBox DockPanel.Dock="Left" ShowClearButton="True" Background="Transparent" Text="{Binding CurDetailItem.TargetValue, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" HorizontalContentAlignment="Left"/>
+                        </DockPanel>
+
+                        <Label Content="工作目录" Grid.Column="0" Grid.Row="3"/>
+                        <DockPanel Grid.Column="1" Grid.Row="3" Margin="0,4,0,0" LastChildFill="True" IsEnabled="{Binding CurDetailItem.IsExecutable}">
+                            <Button DockPanel.Dock="Right" Foreground="{DynamicResource PrimaryBrush}" Style="{StaticResource ButtonIcon}" hc:IconElement.Geometry="M572.694 292.093L500.27 416.248A63.997 63.997 0 0 1 444.989 448H45.025c-18.523 0-30.064-20.093-20.731-36.093l72.424-124.155A64 64 0 0 1 152 256h399.964c18.523 0 30.064 20.093 20.73 36.093zM152 224h328v-48c0-26.51-21.49-48-48-48H272l-64-64H48C21.49 64 0 85.49 0 112v278.046l69.077-118.418C86.214 242.25 117.989 224 152 224z"
+                             Click="HandleItemDetailSelectWorkingDir"/>
+                            <hc:TextBox DockPanel.Dock="Left" ShowClearButton="True" Background="Transparent" Text="{Binding CurDetailItem.WorkingDirValue, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" Margin="0,4,0,0"
+                                    ToolTip="默认为目标所在目录"/>
+                        </DockPanel>
+
+                        <Label Content="参数" Grid.Column="0" Grid.Row="4"/>
+                        <hc:TextBox Grid.Column="1" Grid.Row="4" ShowClearButton="True" IsEnabled="{Binding CurDetailItem.IsExecutable}" Background="Transparent" Text="{Binding CurDetailItem.ArgumentsValue, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" Margin="0,4,0,0">
+                            <hc:TextBox.ToolTip>
+                                <ToolTip>
+                                    <StackPanel>
+                                        <TextBlock Text="1. 空格分隔多个参数"/>
+                                        <TextBlock Text="2. 单个参数中有空格，则用双引号 &quot; 括起来"/>
+                                        <TextBlock Text="3. 参数中带有双引号需要使用 \&quot; 进行转义"/>
+                                    </StackPanel>
+                                </ToolTip>
+                            </hc:TextBox.ToolTip>
+                        </hc:TextBox>
+                    </Grid>
+                    <hc:Divider LineStrokeThickness="2" LineStroke="{DynamicResource DarkPrimaryBrush}" Margin="8,0"/>
+                </StackPanel>
+            </Border>
+        </hc:Drawer>
+        <hc:Drawer x:Name="x_SettingsPanel" IsOpen="{Binding SettingsOpened}" Dock="Right" ShowMode="Cover" MaskCanClose="True">
+            <Border Width="400" BorderThickness="1,1,0,0" BorderBrush="{DynamicResource BorderBrush}">
+                <Border.Background>
+                    <SolidColorBrush Opacity="0.7" Color="{DynamicResource RegionColor}" />
+                </Border.Background>
+                <StackPanel>
+                    <StackPanel.Resources>
+                        <Style TargetType="hc:Divider" BasedOn="{StaticResource DividerBaseStyle}">
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Margin" Value="0" />
+                        </Style>
+                        <Style TargetType="Label" BasedOn="{StaticResource LabelBaseStyle}">
+                            <Setter Property="hc:BorderElement.CornerRadius" Value="0" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                            <Setter Property="HorizontalContentAlignment" Value="Left" />
+                        </Style>
+                        <sys:Double x:Key="TitleWidth">100</sys:Double>
+                    </StackPanel.Resources>
+                    <StackPanel Margin="8">
+                        <StackPanel Orientation="Horizontal">
+                            <ToggleButton Style="{StaticResource ToggleButtonSwitch}" IsChecked="{Binding Settings.StartUpWithSystem}"/>
+                            <Label Content="开机启动" Margin="8,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <ToggleButton Style="{StaticResource ToggleButtonSwitch}" IsChecked="{Binding Settings.ShowInTaskBar}"/>
+                            <Label Content="在任务栏中显示" Margin="8,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <ToggleButton Style="{StaticResource ToggleButtonSwitch}" IsChecked="{Binding Settings.HideOnDeactive}"/>
+                            <Label Content="失去焦点时隐藏到系统托盘" Margin="8,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <ToggleButton Style="{StaticResource ToggleButtonSwitch}" IsChecked="{Binding Settings.CloseToTray}"/>
+                            <Label Content="关闭时隐藏到系统托盘" Margin="8,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <ToggleButton Style="{StaticResource ToggleButtonSwitch}" IsChecked="{Binding Settings.DoubleClickLaunchItem}"/>
+                            <Label Content="双击运行项目" Margin="8,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <ToggleButton Style="{StaticResource ToggleButtonSwitch}" IsChecked="{Binding Settings.AutoHidePanelWhenItemLaunched}"/>
+                            <Label Content="运行项目后关闭面板" Margin="8,0,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <hc:Divider LineStrokeThickness="2" LineStroke="{DynamicResource DarkPrimaryBrush}" Margin="8,0"/>
+                    <StackPanel Margin="8">
+                        <DockPanel LastChildFill="True">
+                            <Label DockPanel.Dock="Left" Content="快捷键呼出" Width="{StaticResource TitleWidth}"/>
+                            <CheckBox DockPanel.Dock="Left" IsChecked="{Binding Settings.HotKeyActivePanel}"/>
+                            <hc:TextBox Margin="4,0,0,0" Background="Transparent" ShowClearButton="True" Text="{Binding Settings.ActivePanelHotKey}" IsEnabled="{Binding Settings.HotKeyActivePanel, Converter={StaticResource Boolean2BooleanReConverter}}" PreviewKeyDown="HandleHotKeyInputKeyDown"/>
+                        </DockPanel>
+                    </StackPanel>
+                    <hc:Divider LineStrokeThickness="2" LineStroke="{DynamicResource DarkPrimaryBrush}" Margin="8,0"/>
+                    <hc:ButtonGroup Margin="8">
+                        <Button Content="打开配置" Click="HandleOpenConfigClicked" hc:IconElement.Width="16" hc:IconElement.Height="16" hc:IconElement.Geometry="M768 21.333c47.128 0 85.333 38.205 85.333 85.333v0 512l-256 256h-341.333c-47.128 0-85.333-38.205-85.333-85.333v0-682.667c0-47.128 38.205-85.333 85.333-85.333v0h512zM554.667 789.333l213.333-213.333h-213.333v213.333zM298.667 618.667h128v-85.333h-128v85.333zM298.667 448h426.667v-85.333h-426.667v85.333zM298.667 277.333h426.667v-85.333h-426.667v85.333z"/>
+                        <Button Content="定位程序" Click="HandleLocateAppClicked" hc:IconElement.Width="16" hc:IconElement.Height="16" hc:IconElement.Geometry="M10 20S3 10.87 3 7a7 7 0 1 1 14 0c0 3.87-7 13-7 13zm0-11a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
+                    </hc:ButtonGroup>
+                    <hc:Divider LineStrokeThickness="2" LineStroke="{DynamicResource DarkPrimaryBrush}" Margin="8,0"/>
+                </StackPanel>
+            </Border>
+        </hc:Drawer>
+        <hc:NotifyIcon Text="HandyPanel" Visibility="Visible">
+            <hc:NotifyIcon.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Command="hc:ControlCommands.PushMainWindow2Top" Header="打开面板"/>
+                    <MenuItem Command="hc:ControlCommands.ShutdownApp" Header="退出"/>
+                </ContextMenu>
+            </hc:NotifyIcon.ContextMenu>
+            <hc:Interaction.Triggers>
+                <hc:EventTrigger EventName="Click">
+                    <hc:EventToCommand Command="hc:ControlCommands.PushMainWindow2Top"/>
+                </hc:EventTrigger>
+            </hc:Interaction.Triggers>
+        </hc:NotifyIcon>
+    </hc:SimplePanel>
+</hc:GlowWindow>

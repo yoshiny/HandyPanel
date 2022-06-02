@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Config xmlns:sub="VarSubNameSpace">
+	<TabList>
+		<Container Name="默认页签" Selected="True" sub:CurFolder=".">
+			<Item Name="面板配置" Icon="" Arguments="" WorkingDir="" Target="${CurFolder}\HandyPanelConfig.xml" />
+		</Container>
+	</TabList>
+	<BoxList>
+		<Container Name="默认盒子" Selected="True" sub:CurFolder=".">
+			<Item Name="程序目录" Icon="" Arguments="" WorkingDir="" Target="${CurFolder}" />
+		</Container>
+	</BoxList>
+</Config>
