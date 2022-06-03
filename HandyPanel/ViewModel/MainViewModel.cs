@@ -18,13 +18,12 @@ using IWshRuntimeLibrary;
 using HandyPanel.Util;
 using System.Xml.Serialization;
 using HandyControl.Tools;
+using NHotkey;
 
 namespace HandyPanel.ViewModel
 {
     class MainViewModel : ObservableRecipient
     {
-        private ICommand active_panel_command_;
-        private List<KeyBinding> global_shortcuts_ = new List<KeyBinding>();
         private KeyGestureConverter key_gesture_converter_ = new KeyGestureConverter();
 
         private const string VarSubNameSpace = "VarSubNameSpace";
@@ -53,7 +52,7 @@ namespace HandyPanel.ViewModel
         public PanelSettings Settings
         {
             get { return settings_; }
-            set { SetProperty( ref settings_, value); }
+            set { SetProperty(ref settings_, value); }
         }
 
         private string settings_file_ = "HandyPanelSettings.xml";
@@ -83,7 +82,7 @@ namespace HandyPanel.ViewModel
         public bool ItemDetailOpened
         {
             get { return item_detail_opened_; }
-            set { SetProperty( ref item_detail_opened_, value); }
+            set { SetProperty(ref item_detail_opened_, value); }
         }
 
         private bool settings_opened_ = false;
@@ -94,7 +93,6 @@ namespace HandyPanel.ViewModel
         }
 
         public MainViewModel() {
-            active_panel_command_ = new RelayCommand(FireActivePanel);
 
             this.PropertyChanged += (object sender, PropertyChangedEventArgs e) =>
             {
@@ -194,8 +192,8 @@ namespace HandyPanel.ViewModel
             };
 
             var list_pair = new List<KeyValuePair<string, ObservableCollection<HandyContainer>>>();
-            list_pair.Add( new KeyValuePair<string, ObservableCollection<HandyContainer>>("TabList", TabList) );
-            list_pair.Add( new KeyValuePair<string, ObservableCollection<HandyContainer>>("BoxList", BoxList) );
+            list_pair.Add(new KeyValuePair<string, ObservableCollection<HandyContainer>>("TabList", TabList));
+            list_pair.Add(new KeyValuePair<string, ObservableCollection<HandyContainer>>("BoxList", BoxList));
 
             using (StreamWriter stream = System.IO.File.CreateText(CfgFileName))
             {
@@ -244,7 +242,7 @@ namespace HandyPanel.ViewModel
                     writer.WriteEndDocument();
                 }
             }
-            
+
             var file_info = new FileInfo(CfgFileName);
             CfgLastModifiedTime = file_info.LastWriteTime;
         }
@@ -310,10 +308,6 @@ namespace HandyPanel.ViewModel
             SaveConfig();
         }
 
-        private void FireActivePanel() {
-            WeakReferenceMessenger.Default.Send( new SimpleMessage(SimpleMessageDefine.ActivePanelMessage));
-        }
-
         private void MakeStartUpWithOS(bool startup) {
             string app_path = Application.ResourceAssembly.Location;
             string app_name = Path.GetFileNameWithoutExtension(app_path);
@@ -330,25 +324,34 @@ namespace HandyPanel.ViewModel
                     shortcut.Save();
                 }
             }
-            else if(System.IO.File.Exists(startup_file))
+            else if (System.IO.File.Exists(startup_file))
             {
                 System.IO.File.Delete(startup_file);
             }
         }
 
-        private void MakeHotKeyActivePanel(bool enable, string hotkey_str) {
-            global_shortcuts_.RemoveAll( o => { return o.Command == active_panel_command_; } );
-            if (enable) {
+        private void MakeHotKeyActivePanel(bool enable, string hotkey_str)
+        {
+            string active_panel = "active_panel";
+            if (enable)
+            {
                 try
                 {
                     var gesture = key_gesture_converter_.ConvertFromString(hotkey_str) as KeyGesture;
-                    global_shortcuts_.Add(new KeyBinding(active_panel_command_, gesture));
+                    NHotkey.Wpf.HotkeyManager.Current.AddOrReplace(active_panel, gesture, FireActivePanel);
                 }
                 catch (Exception)
                 {
                 }
             }
-            GlobalShortcut.Init(global_shortcuts_);
+            else { 
+                NHotkey.Wpf.HotkeyManager.Current.Remove(active_panel);
+            }
+        }
+
+        private void FireActivePanel(object sender, HotkeyEventArgs e)
+        {
+            WeakReferenceMessenger.Default.Send(new SimpleMessage(SimpleMessageDefine.ActivePanelMessage));
         }
 
         private void MakePanelShowInTaskBar() {
