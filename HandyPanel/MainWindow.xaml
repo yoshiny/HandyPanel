@@ -24,6 +24,9 @@
                         <StackPanel.ToolTip>
                             <StackPanel>
                                 <TextBlock>
+                                    <Run Text="目标名称："/><Run Text="{Binding Name, Mode=OneWay}"/>
+                                </TextBlock>
+                                <TextBlock>
                                     <Run Text="执行目标："/><Run Text="{Binding Target, Mode=OneWay}"/>
                                 </TextBlock>
                                 <TextBlock>
