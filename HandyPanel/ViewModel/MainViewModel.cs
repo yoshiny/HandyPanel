@@ -303,6 +303,7 @@ namespace HandyPanel.ViewModel
                 IWshShortcut short_cut = ws.CreateShortcut(file_path) as IWshShortcut;
                 new_item.TargetValue = short_cut.TargetPath;
                 new_item.ArgumentsValue = short_cut.Arguments;
+                new_item.WorkingDirValue = short_cut.WorkingDirectory;
             }
             items.Add(new_item);
             SaveConfig();
