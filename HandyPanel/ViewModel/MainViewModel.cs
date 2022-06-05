@@ -359,7 +359,7 @@ namespace HandyPanel.ViewModel
             WeakReferenceMessenger.Default.Send(new ShowInTaskBarMessage(Settings.ShowInTaskBar));
         }
 
-        private void SaveSettings()
+        public void SaveSettings()
         {
             if (Settings.IsDirty)
             {

@@ -69,6 +69,16 @@ namespace HandyPanel
                 }
             };
 
+            this.Closed += (object sender, EventArgs e) =>
+            {
+                vm_?.SaveSettings();
+            };
+
+            this.SizeChanged += (object sender, SizeChangedEventArgs e) =>
+            {
+                vm_?.SaveSettings();
+            };
+
             this.KeyDown += (object sender, KeyEventArgs e) => {
                 if (e.Key == Key.Escape && Keyboard.Modifiers == ModifierKeys.None)
                 {

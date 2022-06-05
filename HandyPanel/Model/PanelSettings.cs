@@ -68,6 +68,21 @@ namespace HandyPanel.Model
             set { SetProperty( ref hide_on_deactive_,value); }
         }
 
+        private double width = 1444f;
+        public double Width
+        {
+            get { return width; }
+            set { SetProperty( ref width, value); }
+        }
+
+        private double height = 768f;
+        public double Height
+        {
+            get { return height; }
+            set { SetProperty(ref height, value); }
+        }
+
+
         [XmlIgnore]
         public bool IsDirty { get; set; } = false;
 
