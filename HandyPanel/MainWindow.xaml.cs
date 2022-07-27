@@ -316,8 +316,8 @@ namespace HandyPanel
             bool isAdmin = principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
             try
             {
-                LaunchProcess(vm_.CurDetailItem, !isAdmin);
                 vm_.ItemDetailOpened = false;
+                LaunchProcess(vm_.CurDetailItem, !isAdmin);
             }
             catch (Exception ex)
             {
